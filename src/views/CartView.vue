@@ -8,16 +8,28 @@
         >Products
       </router-link>
     </div>
-    <div v-if="products.length > 0" class="flex flex-wrap gap-3">
+    <div v-if="products.length > 0" class="flex flex-wrap gap-3 mb-6">
       <product-card
         v-for="product in products"
         :key="product.id"
         :product="product"
         :buttonText="'Удалить'"
         @takeProduct="deleteProduct"
+        @increase="increaseQuantity"
+        @decrease="deleteProduct"
       />
     </div>
-    <p v-else class="self-center pt-10">Loading...</p>
+    <p v-else-if="products.length > 0 && loading" class="self-center pt-10">
+      Loading...
+    </p>
+    <p v-else class="self-center pt-10">Not yet</p>
+    <button
+      v-if="products.length > 0"
+      @click="clearCart"
+      class="text-white px-5 py-2 border border-solid border-white rounded-md self-center bg-red-500"
+    >
+      Оплатить
+    </button>
   </div>
 </template>
 
@@ -33,40 +45,26 @@ export default {
   data() {
     return {
       products: [],
+      loading: false,
     };
   },
   async created() {
-    await this.$store.dispatch("fetchProducts");
-    this.updateProductsInCart();
+    this.$store.dispatch("fetchCarts");
+    this.products = this.$store.getters.cart || [];
+    this.loading = true;
   },
   methods: {
     ...mapActions(["removeFromCart"]),
+    ...mapActions(["addToCart"]),
     deleteProduct(product) {
-      const productIndex = this.products.findIndex(
-        (item) => item.id === product.id
-      );
-      if (productIndex !== -1) {
-        if (product.count > 1) {
-          this.products[productIndex].count -= 1;
-        } else {
-          this.removeFromCart(product.id);
-          this.updateProductsInCart();
-        }
-      }
+      this.removeFromCart(product.id);
     },
-    updateProductsInCart() {
-      const cartItems = this.$store.state.cart;
-      this.products = Object.values(
-        cartItems.reduce((acc, product) => {
-          const productId = product.id;
-          if (acc[productId]) {
-            acc[productId].count += 1;
-          } else {
-            acc[productId] = { ...product, count: 1 };
-          }
-          return acc;
-        }, {})
-      );
+    increaseQuantity(product) {
+      this.addToCart(product);
+    },
+    clearCart() {
+      this.$store.dispatch("clearCart");
+      this.products = [];
     },
   },
 };

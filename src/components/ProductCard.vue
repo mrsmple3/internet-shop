@@ -7,16 +7,36 @@
       :alt="product.title"
       class="mb-5 max-w-[100px] min-h-[200px] object-contain"
     />
-    <span class="text-start text-sm min-h-[45px]">{{ product.title }}</span>
-    <span class="text-center"
+    <span class="text-sm min-h-[45px] max-lines self-start">{{
+      product.title
+    }}</span>
+    <span class="mb-2 self-start"
       ><span class="font-semibold">Price:</span> {{ product.price }}</span
     >
-    <button
-      class="text-base px-5 py-2 border border-solid border-black rounded-md"
-      @click="takeProduct"
-    >
-      {{ buttonText }}
-    </button>
+    <div class="flex items-center gap-5 self-start">
+      <div v-if="product.quantity > 0" class="flex items-center gap-2">
+        <button
+          class="text-base px-2 py border border-solid border-black rounded-l-md"
+          @click="decreaseQuantity"
+        >
+          -
+        </button>
+        {{ product.quantity }}
+        <button
+          class="text-base px-2 py border border-solid border-black rounded-r-md"
+          @click="increaseQuantity"
+        >
+          +
+        </button>
+      </div>
+      <button
+        class="text-sm py-1 px-2 border border-solid border-black rounded-md hover:bg-red-600 hover:text-white hover:border-white"
+        @click="takeProduct"
+        v-if="!product.quantity > 0"
+      >
+        {{ buttonText }}
+      </button>
+    </div>
   </div>
 </template>
 
@@ -32,12 +52,18 @@ export default {
       required: true,
     },
   },
-  data() {},
   methods: {
     takeProduct() {
       this.$emit("takeProduct", this.product);
     },
+    increaseQuantity() {
+      this.$emit("increase", this.product);
+    },
+    decreaseQuantity() {
+      this.$emit("decrease", this.product);
+    },
   },
+  mounted() {},
 };
 </script>
 
